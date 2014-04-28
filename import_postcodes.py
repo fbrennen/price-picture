@@ -12,7 +12,7 @@ def dms_to_dd(degrees, minutes, seconds, direction):
     dir_modifier = 1
     if direction == 'S' or direction == 'W':
         dir_modifier = -1
-    return dir_modifier * float(degrees) + float(minutes) / 60 + float(seconds) / 3600
+    return dir_modifier * (float(degrees) + float(minutes) / 60 + float(seconds) / 3600)
 
 def import_postcodes(collection, csv_file):
     # Because this might take a while...
