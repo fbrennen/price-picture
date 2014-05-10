@@ -70,8 +70,23 @@ class PriceYear():
                                                                   entry['value'],
                                                                   pct_increase,
                                                                   year)
+        self.__keys = self.median_prices.keys()
+        self.__keys.sort()
             
     def get_median_for(self, postcode):
         if postcode in self.median_prices:
             return self.median_prices[postcode].median_price
         return 0
+
+    def __iter__(self):
+        self.__keyindex = 0
+        return self
+
+    def next(self):
+        try:
+            postcode_price = self.median_prices[
+                self.__keys[self.__keyindex]]
+        except IndexError:
+            raise StopIteration
+        self.__keyindex += 1
+        return postcode_price
