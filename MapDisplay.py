@@ -31,8 +31,14 @@ class MapDisplay():
     bung it in a MongoDB instance. See the import_* and coarsify_* modules.
 
     Public methods:
-    __init__(startyear, endyear) -- assembles our data.
-    display_median_price_information() -- animates everything.
+    - __init__(startyear, endyear) -- assembles our data.
+    - display_median_price_information() -- animates everything.
+
+    Public variables:
+    - landmarks -- city names mapped to GPS coordinates.
+    - themap -- the Basemap used to generate the rivers and coordinate mappings.
+    - startyear, endyear -- the range of the data we're looking at.
+    - price_data -- all the PriceYear data used in the animation.
     """
 
     # These have the lat-lon reversed from the way Basemap wants them because of
@@ -54,19 +60,19 @@ class MapDisplay():
     so we'll use [0, 0.2] for decreases and [0.2, 1.0] for increases. It will
     probably look slightly messy when it hits 0.2 =)
     """
-    color_scale = { 'red': [(0.0, 0.0, 0.0),
-                            (0.2, 0.0, 1.0),
-                            (1.0, 1.0, 0.0)],
-                    'green': [(0.0, 0.0, 0.0),
-                              (0.2, 0.0, 0.7),
-                              (0.8, 0.0, 0.0),
+    _color_scale = { 'red': [(0.0, 0.0, 0.0),
+                             (0.2, 0.0, 1.0),
+                             (1.0, 1.0, 0.0)],
+                     'green': [(0.0, 0.0, 0.0),
+                               (0.2, 0.0, 0.7),
+                               (0.8, 0.0, 0.0),
+                               (1.0, 0.0, 0.0)],
+                     'blue': [(0.0, 0.0, 1.0),
+                              (0.2, 0.2, 0.0),
                               (1.0, 0.0, 0.0)],
-                    'blue': [(0.0, 0.0, 1.0),
-                             (0.2, 0.2, 0.0),
-                             (1.0, 0.0, 0.0)],
-                    'alpha': [(0.0, 0.0, 0.8),
-                              (0.2, 0.5, 0.5),
-                              (1.0, 0.9, 0.0)]} 
+                     'alpha': [(0.0, 0.0, 0.8),
+                               (0.2, 0.5, 0.5),
+                               (1.0, 0.9, 0.0)] } 
                     
     def __init__(self, startyear, endyear):
         """Constructor.
@@ -100,7 +106,7 @@ class MapDisplay():
                                  endyear,
                                  db[schemas.prices_collection_name])
         self._colormap = LinearSegmentedColormap('price_colors',
-                                                MapDisplay.color_scale)
+                                                MapDisplay._color_scale)
 
     def display_median_price_animation(self):
         """Kicks off the animation of median price information."""

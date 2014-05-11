@@ -1,20 +1,24 @@
 #! /usr/bin/python
 
-from pymongo import MongoClient
 from collections import namedtuple
 from datetime import datetime
+
+from pymongo import MongoClient
 from bson import Code
 
 class PriceYear():
-    """
-    Aggregates postcode data for a single year, and compares them to the
+    """Aggregates postcode data for a single year, and compares them to the
     previous year. Provides an iterator to cycle through this year's data.
 
-    Input:
-    - An instance of PriceYear for the previous year, or None for the
-      first year in the series.
-    - The year.
-    - A db collection to extract data from.
+    Public methods:
+    - __init__(year, collection, previous_PriceYear) -- generates the PriceYear.
+
+    Public variables:
+    - PostcodePrice -- a namedtuple of data for one postcode
+    - postcode_map, price_reduce, median_finalize -- used to find data from the
+      DB.
+    - year -- the year this PriceYear corresponds to.
+    - median_prices -- a dictionary mapping postcodes to PostcodePrices
     """
 
     PostcodePrice = namedtuple('PostcodePrice', ['postcode', 'median_price',
@@ -51,6 +55,13 @@ class PriceYear():
                         
 
     def __init__(self, year, collection, previous_PriceYear = None):
+        """Constructor.
+
+        Accepts the year of the data, a pymongo collection to pull the data
+        from, and a PriceYear to compare this one to, in order to produce the
+        percent difference between the two years. For the first year in a
+        series, previous_PriceYear should be None.
+        """
         self.year = year
         yearstart = datetime(int(year), 1, 1)
         yearend = datetime(int(year), 12, 31)
@@ -63,7 +74,7 @@ class PriceYear():
         for entry in results:
             pct_increase = 0
             if previous_PriceYear is not None:
-                last_median = previous_PriceYear.get_median_for(entry['_id'])
+                last_median = previous_PriceYear._get_median_for(entry['_id'])
                 if last_median != 0:
                     pct_increase = entry['value'] / last_median
             self.median_prices[entry['_id']] = self.PostcodePrice(entry['_id'],
@@ -73,12 +84,20 @@ class PriceYear():
         self.__keys = self.median_prices.keys()
         self.__keys.sort()
             
-    def get_median_for(self, postcode):
+    def _get_median_for(self, postcode):
+        """Returns the median price for a postcode.
+
+        Called by other PriceYears in order to generate percentage changes in
+        price.
+        """
         if postcode in self.median_prices:
             return self.median_prices[postcode].median_price
         return 0
 
     def __iter__(self):
+        """These next two allow us to iterate through the PostcodePrices in the
+        class.
+        """
         self.__keyindex = 0
         return self
 
