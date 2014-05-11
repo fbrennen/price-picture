@@ -10,4 +10,5 @@ accessors in MapDisplay and PriceYear.
 
 db_name = 'price_picture'
 prices_collection_name = 'prices'
+input_postcode_collection_name = 'postcodes'
 postcode_collection_name = 'postcode_prefix'

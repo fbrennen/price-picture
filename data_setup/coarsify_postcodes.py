@@ -3,11 +3,16 @@
 from pymongo import MongoClient
 from bson import Code
 
+from .. import db_schemas as schemas
+
 # We've got very detailed postcode data, but are more interested in a larger
 # scale for now, so we'll aggregate everything under the first bit of the
 # postcode, and average the coordinates together.
 
 def coarsify(input_collection, output_collection_name):
+    """Averages together the GPS coordiantes for postcodes under a single prefix,
+    and saves them to another collection.
+    """
     # TODO: This map won't work properly for a few postcodes, such as those
     # with single-letter initial designators. Will work for OX* for now tho!
     themap = Code("function () {"
@@ -31,7 +36,7 @@ def coarsify(input_collection, output_collection_name):
     
 if __name__ == '__main__':
     client = MongoClient();
-    database = client['price_picture']
-    collection = database['postcodes']
-    output_collection_name = 'postcode_prefix'
+    database = client[schemas.db_name]
+    collection = database[schemas.input_postcode_collection_name]
+    output_collection_name = schemas.postcode_collection_name
     coarsify(collection, output_collection_name)

@@ -1,14 +1,35 @@
 #! /usr/bin/python
 
-from pymongo import MongoClient, errors
 import csv
 from sys import argv, exit
+
+from pymongo import MongoClient, errors
+
+from .. import db_schemas as schemas
+
+"""
+import_postcodes.py
+
+This processes a list of full postcodes and dumps them into a DB. You'll want
+to call coarsify_postcodes after this to merge them together.
+
+The Ordinance Survey only provides postcodes in grid-reference Northings and
+Eastings and we'd rather like GPS coordinates. Luckily they also provide a tool
+to convert those to a more useful format, called Grid InQuest, which you can
+find here:
+
+http://www.ordnancesurvey.co.uk/business-and-government/help-and-support/navigation-technology/os-net/grid-inquest.html 
+
+Sadly, that just gives us postcodes in degrees, minutes, and seconds, and
+we need them in decimal degrees (for sanity, and also for Basemap), so we'll
+convert them to that format as well.
+"""
 
 postcode_fieldnames = ('postcode', 'latdeg', 'latmin', 'latsec', 'latdir',
                        'longdeg', 'longmin', 'longsec', 'longdir')
 
-# Our inputs are in degrees, minutes, and seconds, and we'd like decimals
 def dms_to_dd(degrees, minutes, seconds, direction):
+    """Converts from degrees, minutes, seconds to decimal degrees."""
     dir_modifier = 1
     if direction == 'S' or direction == 'W':
         dir_modifier = -1
@@ -16,6 +37,8 @@ def dms_to_dd(degrees, minutes, seconds, direction):
                            float(seconds) / 3600)
 
 def import_postcodes(collection, csv_file):
+    """Imports postcodes from a csv_file, and saves them to a DB collection."""
+    
     # Because this might take a while...
     lines = sum(1 for line in open(csv_file))
     line = 1;
@@ -51,6 +74,6 @@ if __name__ == '__main__':
         print 'Argument must be a .csv file'
         exit()
     client = MongoClient()
-    database = client['price_picture']
-    collection = database['postcodes']
+    database = client[schemas.db_name]
+    collection = database[schemas.input_postcode_collection_name]
     import_postcodes(collection, argv[1])

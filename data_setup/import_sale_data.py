@@ -1,15 +1,26 @@
 #! /usr/bin/python
 
-from pymongo import MongoClient, errors
-from dateutil.parser import parse
 import datetime
 import csv
+from dateutil.parser import parse
 from sys import argv, exit
+
+from pymongo import MongoClient, errors
+
+from .. import db_schemas as schemas
+
+"""
+import_sale_data.py
+
+The Land Registry gives us house prices in a very hefty and complicated format,
+so we need to pull out just the appropriate bits and stuff them in a DB.
+"""
 
 # There are several additional fields here, but we only need the first four
 sale_data_fieldnames = ('id', 'price', 'date', 'postcode')
 
 def import_sale_data(collection, csv_file):
+    """Pulls relevant data from a csv file and stuffs it into a DB collection."""
     # Because this might take a while...
     lines = sum(1 for line in open(csv_file))
     line = 1;
@@ -48,7 +59,7 @@ if __name__ == '__main__':
         print 'Argument must be a .csv file'
         exit()
     client = MongoClient()
-    database = client['price_picture']
-    collection = database['prices']
+    database = client[schemas.db_name]
+    collection = database[schemas.prices_collection_name]
     import_sale_data(collection, argv[1])
     
