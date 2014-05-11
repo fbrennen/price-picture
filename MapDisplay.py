@@ -95,11 +95,7 @@ class MapDisplay():
         self.startyear = startyear
         self.endyear = endyear
 
-        try:
-            client = MongoClient()
-        except ConnectionFailure:
-            print "Can't connect to mongoDB -- is it running?"
-            return False
+        client = MongoClient() # May crash if the DB server isn't running
         db = client[schemas.db_name]
         self._load_postcodes(db[schemas.postcode_collection_name])
         self._prepare_price_data(startyear,
@@ -129,11 +125,11 @@ class MapDisplay():
                              blit = True,
                              init_func = self._init_animate,
                              repeat_delay = 3000)
-        fig.show()
+        plotter.show()
 
     def _init_animate(self):
         """Initializes background drawings for the animation."""
-         return self._draw_background_data()
+        return self._draw_background_data()
 
     def _animate(self, frame):
         """Draws a single price year as part of the animation."""
@@ -160,7 +156,7 @@ class MapDisplay():
             self.base_year = PriceYear(startyear, collection)
         except OperationFailure:
             print "Can't find the prices collection!"
-            return False
+            return
         self.price_data = [self.base_year]
         for year in range(startyear + 1, endyear + 1):
             self.price_data.append(PriceYear(year, collection, self.base_year))
@@ -240,4 +236,8 @@ def get_highres_map():
                    urcrnrlat = 52.187215, urcrnrlon = -0.836800,
                    resolution = 'f', projection = 'tmerc',
                    lat_0 = 51.874893, lon_0 = -1.281746, area_thresh = 1)
-        
+    
+if __name__ == '__main__':
+    mapDisplay = MapDisplay(1996, 2013)
+    mapDisplay.display_median_price_animation()
+    
