@@ -1,0 +1,93 @@
+============
+price_picture
+============
+copyright Forrest Brennen 2014
+
+price_picture is a simple program to display the change in median house prices
+over time. At the moment it only works for Oxfordshire. It will show an animated
+map of the county, with median price changes highlighted by means of colors and
+marker sizes.
+
+
+Requirements
+============
+price_picture was written for Python 2.7, and bits of it won't work with 3.x.
+
+It requires the following Python modules:
+
+* matplotlib to draw our maps and do graphic-y stuff.
+
+* Basemap (a matplotlib toolkit) to get map and geographic data.
+
+* pymongo to operate on MongoDB.
+
+In addition to the Python modules, it will also be necessary to run a local
+mongodb instance. This is used to store the price and postcode data which is at
+the core of the display. Running the DB with default parameters (--smallfiles
+seems to work ok as well) is what I've done, and it's been nice and quick.
+
+Data preparation
+================
+Before we can kick off the animation it's necessary to have some data to work
+with, and that requires getting it and then processing it.
+
+Getting the data
+----------------
+The postcode data comes from the Ordnance Survey. As it requires some
+slight pre-processing I've done that on my own for Oxfordshire already, and
+included it in /data_setup/oxcoords.csv. There are instructions
+/data_setup/import_postcodes on the few steps necessary, which involve
+converting the OS's use of Northings and Eastings to more sensible GPS
+coordinates.
+
+The raw postcode data can be found as part of the OS's Code-Point Open dataset,
+at:
+
+https://www.ordnancesurvey.co.uk/opendatadownload/products.html
+
+House price sale data comes from the Land Registry, and can be found at:
+
+http://www.landregistry.gov.uk/public/information/public-data/price-paid-data/download
+
+It will be necessary to download the entire .csv file of all the house sales
+since 1995 to kickstart the DB, and that will come in at about 3GB or so.
+
+Eventually I'd like to be able to merge new data in continuously (which seems
+like it should be straightforward).
+
+Processing the data
+-------------------
+The scripts to populate the DB are located in /data_setup. Fire up your local
+mongodb server first.
+
+* import_postcodes will accept the oxcoord.csv file, and shove them into the DB.
+
+* coarsify_postcodes will take that postcode data and group it by postcode
+  prefix (e.g. 'OX1 1AB' will become 'OX1'), averaging the GPS coordinates
+  together.
+
+* import_sale_data will accept that ginormous house sale price file, and will
+  load it into the DB. It shouldn't take long to run on a reasonable PC.
+
+Usage
+=====
+The magic happens in the MapDisplay class, which aggregates the data over a set
+number of years. Currently, the only available output is the percentage
+difference in median house sale price since the startyear given to
+MapDisplay. To display data from 1996 to 2013, try the following:
+
+    #! /usr/bin/python
+
+    from MapDisplay import MapDisplay
+
+    the_display = MapDisplay(1996, 2013)
+    the_display.display_median_price_animation()
+
+Issues
+======
+In terms of accuracy there is one significant issue, which is that there are
+some postcode prefixes present which don't appear to exist anymore. For
+Oxfordshire specifically, the OX6 and OX8 postcodes are both referenced in house
+sale data, but I can't find them listed officially anywhere. They both look like
+they've been replaced by one or more two-digit prefixes, but I haven't been able
+to confirm that. 
