@@ -3,6 +3,7 @@
 from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plotter
 from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.colorbar import ColorbarBase
 from matplotlib.animation import FuncAnimation
 import cPickle
 import os.path
@@ -20,10 +21,13 @@ class MapDisplay():
                   'Abingdon': ( 51.6743376, -1.2824895 ),
                   'Woodstock': ( 51.8541088, -1.3533688 ),
                   'Wallingford': ( 51.5975582, -1.1291238 ),
-                  'Faringdon': ( 51.6533383, -1.5850389 ),
                   'Banbury': ( 52.0640782, -1.3386274 ),
                   'Chipping Norton': ( 51.9398064, -1.5519486 ),
-                  'Thame': ( 51.7444865, -0.974216,15 ) }
+                  'Thame': ( 51.7444865, -0.974216,15 ),
+                  'Witney': ( 51.7863378, -1.4952446 ),
+                  'Wantage': ( 51.5872542, -1.4248881 ),
+                  'Didcot': ( 51.6093045, -1.2431861 ),
+                  'Bicester': ( 51.9053114, -1.1543568 ) }
 
     """
     We want colors for both percentage increases and decreses in median price,
@@ -42,7 +46,6 @@ class MapDisplay():
                              (1.0, 0.0, 0.0)],
                     'alpha': [(0.0, 0.0, 0.8),
                               (0.2, 0.5, 0.5),
-                              (0.8, 0.8, 0.7),
                               (1.0, 0.9, 0.0)]} 
                     
     def __init__(self, startyear, endyear):
@@ -67,18 +70,33 @@ class MapDisplay():
                                                 MapDisplay.color_scale)
 
     def do_it(self):
-        fig = plotter.figure()
-        fig.set_tight_layout(True)
-        anim = FuncAnimation(fig, self.animate, frames=100, interval = 1000,
-                             blit = True, init_func = self.init_animate)
+        fig = plotter.figure(num = 1, figsize = (10, 12), tight_layout = True)
+        fig.canvas.set_window_title('Percent increase in median house ' + \
+                                    'price since 1996')
+
+        axis = fig.add_axes([0.85, 0.04, 0.03, 0.92])
+        colorbar_ticks = [0, .2, .4, .6, .8, 1.0]
+        colorbar_labels = ['-100%', '0%', '250%', '500%', '750%', '>1000%']
+        colorbar = ColorbarBase(axis, self.colormap, orientation='vertical')
+        colorbar.set_ticks(colorbar_ticks)
+        colorbar.set_ticklabels(colorbar_labels)
+
+        fig.add_axes([0.0, 0.0, 0.82, 1.0])
+        anim = FuncAnimation(fig,
+                             self.animate,
+                             frames = self.endyear + 1 - self.startyear,
+                             interval = 1000,
+                             blit = True,
+                             init_func = self.init_animate,
+                             repeat_delay = 3000)
         fig.show()
 
     def init_animate(self):
-        return tuple(self.draw_background_data(),)
+         return self.draw_background_data()
 
     def animate(self, frame):
-        year_index = frame % (self.endyear - self.startyear)
-        return tuple(self.display_price_year(self.price_data[year_index]),)
+        year_index = frame % (self.endyear + 1 - self.startyear)
+        return self.display_price_year(self.price_data[year_index])
         
     def load_postcodes(self, collection):
         print "Loading postcode locations."
@@ -117,12 +135,13 @@ class MapDisplay():
                                         'o',
                                         color = self.colormap(normalization),
                                         markersize = 70 * normalization + 10)
-        return drawn_stuff
+        return tuple(drawn_stuff) + (plotter.text(500, 500, str(priceyear.year)),)
         
     """
-    We'll cap our percent increases at 500% for now, which should give us a decent
-    range. We could let increases > 500% fall outsize [0,1] and the colormap would
-    still be happy, but if we cap them properly we can also scale marker sizes.
+    We'll cap our percent increases at 1000% for now, which should give us a decent
+    range. We could let increases greater than that fall outsize [0,1] and the
+    colormap would still be happy, but if we cap them properly we can also scale
+    marker sizes.
 
     These aren't really "percentage increases", but rather "percent of the
     previous median value", so an increase of 20% will be 1.2, and a decrease 0.8
@@ -143,9 +162,9 @@ class MapDisplay():
         for city in MapDisplay.landmarks:
             x, y = self.themap(MapDisplay.landmarks[city][1],
                                MapDisplay.landmarks[city][0])
-            drawn_stuff += self.themap.plot(x, y, 'bo')
+            drawn_stuff += self.themap.plot(x, y, 'ko')
             plotter.text(x + 500, y + 500, city)
-        return drawn_stuff
+        return tuple(drawn_stuff)
 
 """
 Highres data takes a long time to prepare but is worth the effort, so
