@@ -1,0 +1,70 @@
+====================
+ price_picture TODO
+====================
+I'm sure I've forgotten something. 
+
+short-term
+==========
+
+1. Rename the repo / module
+---------------------------
+Yeah, so using a hyphen instead of an underscore makes Python very
+unhappy. Whups. 
+
+2. Enable window resizing
+-------------------------
+Right now the blitting goes completely off the rails if the window is
+resized, and the animation doesn't clear the previous frame. This strikes me as
+something that should be easy to fix, but I don't know how.
+
+3. Make the price visualization clearer around the boundaries
+-------------------------------------------------------------
+The resizing markers are ok, but the areas between -100% and 0% are a bit
+fuzzy. Specifically, it might be more useful to have the marker size increase as
+you get closer to -100%, instead of decrease as it does now.
+
+4. Deal with price comparisons where there is no base price
+-----------------------------------------------------------
+The percentage increase is based on a comparison with the base year, and in the
+case where there is no price available in a particular postcode in the base
+year, there is no percentage difference to calculate. It would be better to use
+the base year, or the earlier available year with price data.
+
+5. Make the cold-start process automatic
+----------------------------------------
+As in: automate the bits surrounding the data_setup scripts, e.g. downloading
+the massive file and processing postcodes. I'm not sure if we can start a
+MongoDB server automatically, but if we could that would be pretty awesome.
+
+
+longer-term
+===========
+
+1. Add more visualizations / animations
+---------------------------------------
+Just looking at percent increase in median price fails to convey a lot of
+information. For example:
+
+    * How expensive it is to live somewhere (absolute median price, for instance).
+
+    * Change in absolute median price.
+
+    * Controlling for the number of house sales (scale marker size to match?).
+
+    * Unifying house price and distribution of sale prices.
+
+2. Add more postcodes
+---------------------
+'nuff said.
+
+3. Add storage of calculated results
+------------------------------------
+As long as we have a DB sitting in the background, we should be storing some of
+the PriceYear data so we don't have to calculate it again. This will be
+especially important when we expand to more postcodes, as it will take ages to
+do all the initial PriceYear calculations.
+
+4. Update the list of prices periodically
+-----------------------------------------
+This should be straightforward, as there is a clear place where the Land
+Registry puts its new data.
