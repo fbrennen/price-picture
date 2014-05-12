@@ -28,22 +28,22 @@ seems to work ok as well) is what I've done, and it's been nice and quick.
 
 Contents
 ========
-|__init__.py
-|.gitignore
-|COPYING
-|data_setup/
-|    __init__.py
-|    coarsify_postcodes.py
-|    import_postcode_data.py
-|    import_sale_data.py
-|    oxcoords.csv
-|db_schemas.py
-|docs/
-|    TODO
-|highresmap.pickle
-|MapDisplay.py
-|PriceYear.py
-|README
+    __init__.py
+    .gitignore
+    COPYING
+    data_setup/
+        __init__.py
+        coarsify_postcodes.py
+        import_postcode_data.py
+        import_sale_data.py
+        oxcoords.csv
+    db_schemas.py
+    docs/
+        TODO
+    highresmap.pickle
+    MapDisplay.py
+    PriceYear.py
+    README
 
 Data preparation
 ================
