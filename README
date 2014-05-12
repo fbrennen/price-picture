@@ -26,6 +26,25 @@ mongodb instance. This is used to store the price and postcode data which is at
 the core of the display. Running the DB with default parameters (--smallfiles
 seems to work ok as well) is what I've done, and it's been nice and quick.
 
+Contents
+========
+__init__.py
+.gitignore
+COPYING
+data_setup/
+    __init__.py
+    coarsify_postcodes.py
+    import_postcode_data.py
+    import_sale_data.py
+    oxcoords.csv
+db_schemas.py
+docs/
+    TODO
+highresmap.pickle
+MapDisplay.py
+PriceYear.py
+README
+
 Data preparation
 ================
 Before we can kick off the animation it's necessary to have some data to work
